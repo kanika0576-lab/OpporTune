@@ -68,7 +68,7 @@ export default function OpportunityDetail({
             rel="noopener noreferrer"
             className="btn btn-primary btn-sm"
           >
-            Open official page ↗
+            Open source page ↗
           </a>
         </div>
 

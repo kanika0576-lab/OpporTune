@@ -121,7 +121,7 @@ export default function OpportunityCard({
           rel="noopener noreferrer"
           className="btn btn-ghost btn-sm"
         >
-          Official page ↗
+          Source page ↗
         </a>
       </div>
     </article>

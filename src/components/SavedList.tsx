@@ -77,7 +77,7 @@ export default function SavedList({
                 rel="noopener noreferrer"
                 className="btn btn-ghost btn-sm"
               >
-                Official page ↗
+                Source page ↗
               </a>
               <button
                 type="button"
