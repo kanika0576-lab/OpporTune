@@ -32,6 +32,35 @@ function isUsefulOpportunityUrl(url: string): boolean {
   }
 }
 
+export function isCurrentCategoryMatch(opportunity: Opportunity): boolean {
+  const host = new URL(opportunity.officialUrl).hostname.toLowerCase().replace(/^www\./, "");
+  const sourceText = [
+    opportunity.title,
+    opportunity.eligibilityText,
+    ...opportunity.sourceEvidence.map((item) => item.quote),
+  ].join(" ").toLowerCase();
+
+  // Exclude stale vacancy pages even when a search engine still indexes them.
+  if (/no (?:latest |current |open )?(?:jobs?|positions?|vacancies) available|applications? (?:are )?closed|not accepting applications|registration (?:is )?closed/.test(sourceText)) {
+    return false;
+  }
+
+  if (opportunity.category === "government_scheme") {
+    const officialGovernmentHost = /(?:^|\.)(?:gov\.in|nic\.in|gov|gov\.uk)$/.test(host);
+    const schemeTopic = /\b(?:scheme|scholarship|financial aid|student benefit|grant)\b/.test(sourceText);
+    return officialGovernmentHost && schemeTopic;
+  }
+
+  if (opportunity.category === "hackathon") {
+    const editorial = /\b(?:project ideas?|ideas for|top \d+|best \d+|complete guide|what is a hackathon|how to organize)\b/.test(sourceText);
+    const aboutHackathons = /\bhackathons?\b/.test(sourceText);
+    const blockedPage = /cookies are disabled|enable cookies and refresh|access denied|verify you are human/.test(sourceText);
+    return aboutHackathons && !editorial && !blockedPage;
+  }
+
+  return true;
+}
+
 function sendError(
   res: VercelResponse,
   status: number,
@@ -167,6 +196,7 @@ export default async function handler(
       )
       .filter((opportunity): opportunity is Opportunity => opportunity !== null)
       .filter((opportunity) => !opportunity.deadline || opportunity.deadline >= new Date().toISOString().slice(0, 10))
+      .filter(isCurrentCategoryMatch)
       .sort((a, b) => checkEligibility(profile, b).relevanceScore - checkEligibility(profile, a).relevanceScore)
       .slice(0, limit);
 
