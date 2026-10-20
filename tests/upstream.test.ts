@@ -128,6 +128,19 @@ describe("opportunity category quality filters", () => {
       eligibilityText: "We currently have no latest jobs available for this listing.",
     }))).toBe(false);
   });
+
+  it("removes blocked cookie and bot-challenge pages from every category", () => {
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "internship",
+      title: "Unstop - Competitions, Hackathons and Internships",
+      eligibilityText: "Cookies are disabled in your browser settings. Enable cookies and refresh the page.",
+    }))).toBe(false);
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "internship",
+      title: "Software Engineering Internship",
+      eligibilityText: "Currently enrolled undergraduate students can apply.",
+    }))).toBe(true);
+  });
 });
 
 beforeEach(() => {
