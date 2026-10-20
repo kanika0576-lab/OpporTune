@@ -74,15 +74,15 @@ describe("team size parsing", () => {
 });
 
 describe("checkEligibility", () => {
-  it("marks every checkable criterion MET when the profile satisfies them", () => {
+  it("keeps unmodeled enrollment rules UNKNOWN even when known checks match", () => {
     const result = checkEligibility(matchingProfile, makeOpportunity());
 
-    expect(result.criteria.every((c) => c.status === "MET")).toBe(true);
-    expect(result.metCount).toBe(result.criteria.length);
+    expect(result.criteria.filter((c) => c.id !== "additional-requirements").every((c) => c.status === "MET")).toBe(true);
+    expect(result.metCount).toBe(result.criteria.length - 1);
     expect(result.notMetCount).toBe(0);
-    expect(result.unknownCount).toBe(0);
-    expect(result.verdict).toBe("eligible");
-    expect(result.fullyVerified).toBe(true);
+    expect(result.unknownCount).toBe(1);
+    expect(result.verdict).toBe("needs_review");
+    expect(result.fullyVerified).toBe(false);
   });
 
   it("never counts UNKNOWN as verified eligibility", () => {
@@ -128,7 +128,7 @@ describe("checkEligibility", () => {
     const result = checkEligibility(profile, makeOpportunity());
 
     expect(result.criteria.find((c) => c.id === "skills")).toBeUndefined();
-    expect(result.verdict).toBe("eligible");
+    expect(result.verdict).toBe("needs_review");
   });
 
   it("keeps skills as a relevance signal when the student has not listed any", () => {
@@ -138,7 +138,7 @@ describe("checkEligibility", () => {
 
     const skills = result.criteria.find((c) => c.id === "skills");
     expect(skills).toBeUndefined();
-    expect(result.fullyVerified).toBe(true);
+    expect(result.fullyVerified).toBe(false);
   });
 
   it("marks team size NOT_MET when it does not match", () => {
@@ -164,6 +164,7 @@ describe("checkEligibility", () => {
       skills: [],
       teamSize: null,
       eligibilityText: "Come and build something great.",
+      sourceEvidence: [],
     });
 
     const result = checkEligibility(matchingProfile, bare);
@@ -171,6 +172,24 @@ describe("checkEligibility", () => {
     expect(result.criteria).toHaveLength(0);
     expect(result.notChecked).toContain("Education level");
     expect(result.notChecked).toContain("Team size");
+    expect(result.verdict).toBe("needs_review");
+    expect(result.fullyVerified).toBe(false);
+  });
+
+  it("keeps caste and community rules unknown instead of passing them", () => {
+    const scheme = makeOpportunity({
+      category: "government_scheme",
+      eligibilityText: "Applicants must belong to the OBC category.",
+      educationRequirements: [],
+      teamSize: null,
+      sourceEvidence: [{ url: SOURCE_URL, quote: "Applicants must belong to the OBC category." }],
+    });
+
+    const result = checkEligibility(matchingProfile, scheme);
+    const additional = result.criteria.find((criterion) => criterion.id === "additional-requirements");
+
+    expect(additional?.status).toBe("UNKNOWN");
+    expect(additional?.evidence[0].quote).toContain("OBC");
     expect(result.verdict).toBe("needs_review");
     expect(result.fullyVerified).toBe(false);
   });
