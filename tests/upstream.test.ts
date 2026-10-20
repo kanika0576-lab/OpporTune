@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import healthHandler from "../api/health";
-import searchHandler from "../api/search";
+import searchHandler, { isCurrentCategoryMatch } from "../api/search";
+import type { Opportunity } from "../src/types";
 
 const TEST_KEY = "tf_test_secret_key_123";
 
@@ -69,6 +70,53 @@ const validBody = {
 };
 
 const originalFetch = globalThis.fetch;
+
+function opportunityFixture(overrides: Partial<Opportunity>): Opportunity {
+  return {
+    id: "test-opportunity",
+    title: "Student opportunity",
+    organizer: "Example",
+    category: "hackathon",
+    officialUrl: "https://example.org/opportunity",
+    deadline: null,
+    eligibilityText: "",
+    educationRequirements: [],
+    graduationYears: [],
+    skills: [],
+    teamSize: null,
+    sourceEvidence: [],
+    retrievedAt: "2026-10-20T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+describe("opportunity category quality filters", () => {
+  it("keeps official government schemes and removes private scholarship roundups", () => {
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "government_scheme",
+      title: "Prime Minister's Scholarship Scheme",
+      officialUrl: "https://www.myscheme.gov.in/schemes/pmss",
+    }))).toBe(true);
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "government_scheme",
+      title: "Top Government Scholarships for Students",
+      officialUrl: "https://example.com/scholarships-guide",
+    }))).toBe(false);
+  });
+
+  it("removes hackathon idea articles and stale job pages", () => {
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "hackathon",
+      title: "45+ Top Hackathon Project Ideas",
+      eligibilityText: "Ideas for your next project",
+    }))).toBe(false);
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "internship",
+      title: "Software Engineering Internship",
+      eligibilityText: "We currently have no latest jobs available for this listing.",
+    }))).toBe(false);
+  });
+});
 
 beforeEach(() => {
   process.env.TINYFISH_API_KEY = TEST_KEY;
@@ -231,7 +279,7 @@ describe("/api/search — success path", () => {
             results: [
               { title: "Expired challenge", url: "https://example.org/expired" },
               { title: "Video result", url: "https://youtube.com/watch?v=1" },
-              { title: "Open challenge", url: "https://example.org/open" },
+              { title: "Open Hackathon Challenge", url: "https://example.org/open" },
             ],
           },
         };
@@ -247,7 +295,7 @@ describe("/api/search — success path", () => {
             },
             {
               url: "https://example.org/open",
-              title: "Open challenge",
+              title: "Open Hackathon Challenge",
               text: "Open to undergraduate students. Applications are open now.",
             },
           ],
@@ -257,7 +305,7 @@ describe("/api/search — success path", () => {
     const { res, captured } = createRes();
     await searchHandler({ method: "POST", body: validBody } as any, res);
     expect(captured.statusCode).toBe(200);
-    expect(captured.body.opportunities.map((item: any) => item.title)).toEqual(["Open challenge"]);
+    expect(captured.body.opportunities.map((item: any) => item.title)).toEqual(["Open Hackathon Challenge"]);
   });
 
   it("returns normalized, source-backed opportunities", async () => {
@@ -273,7 +321,7 @@ describe("/api/search — success path", () => {
               {
                 position: 1,
                 site_name: "example.org",
-                title: "Global AI Build Challenge",
+                title: "Global AI Build Hackathon Challenge",
                 snippet: "Annual student hackathon",
                 url: "https://example.org/ai-build",
               },
@@ -288,7 +336,7 @@ describe("/api/search — success path", () => {
             {
               url: "https://example.org/ai-build",
               final_url: "https://example.org/ai-build",
-              title: "Global AI Build Challenge",
+              title: "Global AI Build Hackathon Challenge",
               description: null,
               language: "en",
               format: "markdown",
@@ -311,7 +359,7 @@ describe("/api/search — success path", () => {
     expect(captured.body.opportunities).toHaveLength(1);
 
     const opportunity = captured.body.opportunities[0];
-    expect(opportunity.title).toBe("Global AI Build Challenge");
+    expect(opportunity.title).toBe("Global AI Build Hackathon Challenge");
     expect(opportunity.deadline).toBe("2027-03-15");
     expect(opportunity.teamSize).toBe("Teams of 2-4");
     expect(opportunity.skills).toContain("python");
