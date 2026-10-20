@@ -48,7 +48,9 @@ export default function SavedList({
           <li key={opportunity.id} className="card p-5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="chip bg-navy-900 text-white capitalize">
-                {opportunity.category}
+                {opportunity.category === "government_scheme"
+                  ? "Government scheme"
+                  : opportunity.category}
               </span>
               <span className={`chip border ${TONE_CLASS[tone]}`}>
                 {verdictLabel(eligibility.verdict)}

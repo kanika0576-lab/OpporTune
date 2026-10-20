@@ -10,7 +10,7 @@ const STEPS = [
   {
     n: "01",
     title: "Tell us about you",
-    body: "Education level, interests, skills, location and how big your team is. It stays in your browser.",
+    body: "Education level, expected graduation year, interests, skills, location and team size. It stays in your browser.",
   },
   {
     n: "02",
@@ -42,8 +42,8 @@ export default function Landing({
               <span className="text-teal-700">Start Qualifying.</span>
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-600 sm:text-lg">
-              OpporTune searches real hackathons, scholarships, internships and
-              fellowships with the TinyFish Search and Fetch APIs — then shows
+              OpporTune searches real hackathons, scholarships, internships,
+              fellowships and government schemes with the TinyFish Search and Fetch APIs — then shows
               you exactly which requirements you meet, which you do not, and
               which nobody has published yet. Every claim is linked to the page
               it came from.

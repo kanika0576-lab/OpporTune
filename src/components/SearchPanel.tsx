@@ -16,6 +16,7 @@ interface SearchPanelProps {
 const CATEGORY_LABELS: Record<OpportunityCategory, string> = {
   hackathon: "Hackathons",
   scholarship: "Scholarships",
+  government_scheme: "Government schemes",
   internship: "Internships",
   fellowship: "Fellowships",
 };
@@ -23,6 +24,7 @@ const CATEGORY_LABELS: Record<OpportunityCategory, string> = {
 const CATEGORY_HINTS: Record<OpportunityCategory, string> = {
   hackathon: "Build something in 24–72 hours with a team.",
   scholarship: "Funding for tuition, courses or research.",
+  government_scheme: "Public benefits, grants and student support from official portals.",
   internship: "Paid or credit-based work experience.",
   fellowship: "Research, policy or leadership fellowships.",
 };

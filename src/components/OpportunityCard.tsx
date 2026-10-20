@@ -29,7 +29,9 @@ export default function OpportunityCard({
     <article className="card p-5 transition hover:border-teal-300 sm:p-6">
       <div className="flex flex-wrap items-center gap-2">
         <span className="chip bg-navy-900 text-white capitalize">
-          {opportunity.category}
+          {opportunity.category === "government_scheme"
+            ? "Government scheme"
+            : opportunity.category}
         </span>
         <span
           className={`chip border ${TONE_CLASS[tone]}`}

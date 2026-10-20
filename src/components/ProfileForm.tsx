@@ -213,6 +213,23 @@ export default function ProfileForm({
           </div>
         </div>
 
+        <div className="max-w-sm">
+          <label className="label" htmlFor="profile-graduation-year">
+            Expected graduation year
+          </label>
+          <input
+            id="profile-graduation-year"
+            className="field"
+            inputMode="numeric"
+            pattern="20[0-9]{2}"
+            maxLength={4}
+            placeholder="e.g. 2027"
+            value={profile.graduationYear ?? ""}
+            onChange={(event) => onChange({ ...profile, graduationYear: event.target.value.replace(/[^0-9]/g, "").slice(0, 4) })}
+          />
+          <p className="mt-1 text-xs text-navy-500">Used only when the source states eligible graduation years or batches.</p>
+        </div>
+
         <TagEditor
           id="profile-interests"
           label="Interests"

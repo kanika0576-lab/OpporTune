@@ -36,7 +36,9 @@ export default function OpportunityDetail({
       <header className="card p-5 sm:p-7">
         <div className="flex flex-wrap items-center gap-2">
           <span className="chip bg-navy-900 text-white capitalize">
-            {opportunity.category}
+            {opportunity.category === "government_scheme"
+              ? "Government scheme"
+              : opportunity.category}
           </span>
           <span className="text-xs font-semibold text-navy-500">
             {opportunity.organizer}

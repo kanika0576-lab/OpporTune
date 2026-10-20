@@ -38,6 +38,12 @@ export default function EligibilityChecklist({
         </span>
       </div>
 
+      <p className="mt-2 text-xs leading-relaxed text-navy-500">
+        Skills affect relevance ranking only. “Stated checks met” means each
+        checkable rule found on the retrieved page matched your profile; it
+        does not confirm requirements the page did not disclose.
+      </p>
+
       {eligibility.unknownCount > 0 ? (
         <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-900">
           Unchecked criteria stay <strong>unknown</strong> — they are never
