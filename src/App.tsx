@@ -65,6 +65,7 @@ export default function App() {
     () =>
       Boolean(
         profile.educationLevel ||
+          profile.graduationYear ||
           profile.location ||
           profile.skills.length ||
           profile.interests.length,
@@ -144,6 +145,7 @@ export default function App() {
 
   const profileSummary = [
     profile.educationLevel ? profile.educationLevel.replace("_", " ") : null,
+    profile.graduationYear ? `Graduating ${profile.graduationYear}` : null,
     profile.location || null,
     profile.skills.length ? `${profile.skills.length} skills` : null,
     profile.interests.length ? `${profile.interests.length} interests` : null,
