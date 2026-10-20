@@ -31,22 +31,25 @@ export default function Landing({
 }: LandingProps) {
   return (
     <div>
-      <section className="navy-panel navy-grid relative overflow-hidden">
+      <section className="relative overflow-hidden bg-white">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
           <div className="max-w-3xl">
-            <span className="chip border border-teal-400/40 bg-teal-400/10 text-teal-200">
+            <span className="chip border border-teal-200 bg-teal-50 text-teal-800">
               ● Live web results · not a mockup
             </span>
-            <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] text-white sm:text-5xl lg:text-6xl">
-              Find the opportunity.{" "}
-              <span className="gradient-text">Then prove you qualify.</span>
+            <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] text-navy-900 sm:text-5xl lg:text-6xl">
+              Stop Searching.{" "}
+              <span className="text-teal-700">Start Qualifying.</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-100 sm:text-lg">
+            <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-600 sm:text-lg">
               OpporTune searches real hackathons, scholarships, internships and
               fellowships with the TinyFish Search and Fetch APIs — then shows
               you exactly which requirements you meet, which you do not, and
               which nobody has published yet. Every claim is linked to the page
               it came from.
+            </p>
+            <p className="mt-3 text-sm font-semibold tracking-wide text-navy-700">
+              Your Potential Deserves an Opportunity.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -60,7 +63,7 @@ export default function Landing({
               <button
                 type="button"
                 onClick={() => onNavigate("profile")}
-                className="btn border border-white/25 bg-white/10 text-white hover:bg-white/20"
+                className="btn btn-secondary"
               >
                 {hasProfile ? "Edit my profile" : "Build my profile"}
               </button>
@@ -74,12 +77,12 @@ export default function Landing({
               ].map((item) => (
                 <div
                   key={item.k}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                  className="rounded-2xl border border-navy-100 bg-slate-50 p-4"
                 >
-                  <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-teal-300">
+                  <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-teal-700">
                     {item.k}
                   </dt>
-                  <dd className="mt-1.5 text-sm text-navy-100">{item.v}</dd>
+                  <dd className="mt-1.5 text-sm text-navy-700">{item.v}</dd>
                 </div>
               ))}
             </dl>
