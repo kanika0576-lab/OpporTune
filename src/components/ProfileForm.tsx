@@ -91,7 +91,7 @@ function TagEditor({
       <label className="label" htmlFor={id}>
         {label}
       </label>
-      <p className="mb-2 text-xs text-navy-400" id={`${id}-hint`}>
+      <p className="mb-2 text-xs text-navy-500" id={`${id}-hint`}>
         {hint}
       </p>
       <div className="flex gap-2">
@@ -278,7 +278,7 @@ export default function ProfileForm({
                       {option.label}
                     </span>
                   </span>
-                  <span className="mt-1 pl-6 text-[11px] text-navy-400">
+                  <span className="mt-1 pl-6 text-[11px] text-navy-500">
                     {option.hint}
                   </span>
                 </label>
@@ -299,7 +299,7 @@ export default function ProfileForm({
               ✓ Saved to this browser
             </span>
           ) : (
-            <span className="text-sm text-navy-400">
+            <span className="text-sm text-navy-500">
               Your profile is stored in this browser only.
             </span>
           )}

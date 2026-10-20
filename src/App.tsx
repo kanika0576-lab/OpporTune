@@ -357,7 +357,7 @@ export default function App() {
       </main>
 
       <footer className="border-t border-navy-100 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-xs text-navy-400 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-xs text-navy-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
             <strong className="text-navy-600">OpporTune</strong> — Evidence-First
             Opportunity Navigator. Built with React, Vite, Tailwind and the

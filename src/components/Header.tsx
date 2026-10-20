@@ -51,7 +51,7 @@ export default function Header({
             <span className="block text-sm font-extrabold tracking-wide text-navy-900">
               OpporTune
             </span>
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-navy-400">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-navy-500">
               Evidence-first
             </span>
           </span>

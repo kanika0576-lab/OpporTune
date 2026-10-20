@@ -37,7 +37,7 @@ export default function OpportunityCard({
         >
           {verdictLabel(eligibility.verdict)}
         </span>
-        <span className="text-xs text-navy-400">
+        <span className="text-xs text-navy-500">
           {opportunity.organizer}
         </span>
       </div>
@@ -54,7 +54,7 @@ export default function OpportunityCard({
 
       <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
         <div>
-          <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+          <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
             Deadline
           </dt>
           <dd
@@ -66,7 +66,7 @@ export default function OpportunityCard({
           </dd>
         </div>
         <div>
-          <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+          <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
             Team size
           </dt>
           <dd className="mt-0.5 font-semibold text-navy-800">
@@ -74,7 +74,7 @@ export default function OpportunityCard({
           </dd>
         </div>
         <div>
-          <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+          <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
             Relevance
           </dt>
           <dd className="mt-0.5 font-semibold text-navy-800">
@@ -88,7 +88,7 @@ export default function OpportunityCard({
           "No eligibility statement was found in the retrieved content."}
       </p>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-navy-400">
+      <p className="mt-2 text-[11px] leading-relaxed text-navy-500">
         Relevance measures interest and skill overlap only. It is not evidence
         that you are eligible.
       </p>

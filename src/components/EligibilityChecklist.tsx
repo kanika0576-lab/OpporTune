@@ -73,7 +73,7 @@ export default function EligibilityChecklist({
 
             <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
               <div>
-                <dt className="font-bold uppercase tracking-wide text-navy-400">
+                <dt className="font-bold uppercase tracking-wide text-navy-500">
                   Requirement
                 </dt>
                 <dd className="mt-0.5 text-navy-700">
@@ -81,7 +81,7 @@ export default function EligibilityChecklist({
                 </dd>
               </div>
               <div>
-                <dt className="font-bold uppercase tracking-wide text-navy-400">
+                <dt className="font-bold uppercase tracking-wide text-navy-500">
                   Your profile
                 </dt>
                 <dd className="mt-0.5 text-navy-700">
@@ -96,7 +96,7 @@ export default function EligibilityChecklist({
 
             {criterion.evidence.length > 0 ? (
               <div className="mt-3">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
                   Evidence
                 </p>
                 <ul className="mt-1.5 space-y-2">

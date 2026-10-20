@@ -72,7 +72,7 @@ export default function OpportunityDetail({
 
         <dl className="mt-6 grid gap-4 sm:grid-cols-3">
           <div>
-            <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
               Deadline
             </dt>
             <dd className="mt-1 text-sm font-semibold text-navy-800">
@@ -80,7 +80,7 @@ export default function OpportunityDetail({
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
               Team size
             </dt>
             <dd className="mt-1 text-sm font-semibold text-navy-800">
@@ -88,12 +88,12 @@ export default function OpportunityDetail({
             </dd>
           </div>
           <div>
-            <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
               Relevance
             </dt>
             <dd className="mt-1 text-sm font-semibold text-navy-800">
               {eligibility.relevanceScore}/100
-              <span className="block text-[11px] font-medium text-navy-400">
+              <span className="block text-[11px] font-medium text-navy-500">
                 interest + skill overlap only
               </span>
             </dd>
@@ -140,7 +140,7 @@ export default function OpportunityDetail({
 
         <div className="mt-4 space-y-4">
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+            <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
               Eligibility statement
             </h4>
             <p className="mt-1 text-sm leading-relaxed text-navy-700">
@@ -150,7 +150,7 @@ export default function OpportunityDetail({
           </div>
 
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+            <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
               Education requirements found
             </h4>
             {opportunity.educationRequirements.length > 0 ? (
@@ -167,7 +167,7 @@ export default function OpportunityDetail({
           </div>
 
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+            <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
               Skills found
             </h4>
             {opportunity.skills.length > 0 ? (
@@ -187,7 +187,7 @@ export default function OpportunityDetail({
         </div>
 
         <div className="mt-6 border-t border-navy-100 pt-5">
-          <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-400">
+          <h4 className="text-[11px] font-bold uppercase tracking-wide text-navy-500">
             Source evidence ({opportunity.sourceEvidence.length})
           </h4>
           {opportunity.sourceEvidence.length > 0 ? (
@@ -220,7 +220,7 @@ export default function OpportunityDetail({
           )}
         </div>
 
-        <p className="mt-5 text-[11px] text-navy-400">
+        <p className="mt-5 text-[11px] text-navy-500">
           Retrieved {formatTimestamp(opportunity.retrievedAt)} · Source:{" "}
           <a
             href={opportunity.officialUrl}
