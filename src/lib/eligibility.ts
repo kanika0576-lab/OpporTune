@@ -254,6 +254,7 @@ const UNMODELED_REQUIREMENTS: { label: string; pattern: RegExp }[] = [
   { label: "Disability status", pattern: /\b(?:person with disabilit\w*|disability certificate|disabled applicants)\b/i },
   { label: "Current enrollment", pattern: /\b(?:currently enrolled|enrolled at|enrolled in|enrollment required)\b/i },
   { label: "Institution restriction", pattern: /\b(?:government college|recognized university|accredited institution|approved institution)\b/i },
+  { label: "Field of study", pattern: /\b(?:degree|major|course|discipline)\s+(?:in|of)\b|\bstudying\s+(?:for|in)\b/i },
 ];
 
 /** Keep uncovered requirements visible as UNKNOWN instead of silently passing them. */
