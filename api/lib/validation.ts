@@ -52,6 +52,9 @@ function sanitizeProfile(input: unknown): StudentProfile {
   return {
     name: asString(raw.name, 80) ?? "",
     educationLevel,
+    graduationYear: /^20\d{2}$/.test(String(raw.graduationYear ?? ""))
+      ? String(raw.graduationYear)
+      : "",
     interests: asStringArray(raw.interests, 12, 60),
     skills: asStringArray(raw.skills, 20, 60),
     location: asString(raw.location, 80) ?? "",

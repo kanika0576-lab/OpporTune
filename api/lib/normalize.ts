@@ -79,10 +79,10 @@ function splitSentences(text: string): string[] {
 function sentenceAround(sentences: string[], index: number): string {
   let offset = 0;
   for (const sentence of sentences) {
-    const start = index - offset;
-    offset += sentence.length + 1;
+    const start = offset;
     const end = start + sentence.length;
     if (index >= start && index <= end) return sentence;
+    offset = end + 1;
   }
   return sentences[0] ?? "";
 }
@@ -102,6 +102,8 @@ function normalizeMonthDate(
   const day = parseInt(dayRaw, 10);
   const year = parseInt(yearRaw, 10);
   if (!month || !day || day < 1 || day > 31 || !year) return null;
+  const parsed = new Date(Date.UTC(year, Number(month) - 1, day));
+  if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== Number(month) - 1 || parsed.getUTCDate() !== day) return null;
   return `${year}-${month}-${String(day).padStart(2, "0")}`;
 }
 
@@ -132,7 +134,10 @@ export function extractDeadline(text: string): Fact | null {
 
       let value: string | null = null;
       if (match.length === 4 && /^\d{4}$/.test(match[1])) {
-        value = match[0];
+        const parsed = new Date(`${match[0]}T00:00:00.000Z`);
+        value = Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== match[0]
+          ? null
+          : match[0];
       } else if (/^\d{4}$/.test(match[3])) {
         value = normalizeMonthDate(match[1], match[2], match[3]);
         if (!value) {
@@ -156,6 +161,7 @@ const EDUCATION_PATTERNS: RegExp[] = [
   /\bcurrently enrolled\b|\benrolled\b/gi,
   /\bcollege student\b|\buniversity student\b/gi,
 ];
+const REQUIREMENT_CONTEXT = /\b(?:eligib\w*|who can apply|open to|applicant|candidate|must be|requirement|currently enrolled|student|batch|graduat\w*|pass.?out)\b/i;
 
 /** Education requirement phrases, each backed by a supporting quote. */
 export function extractEducationRequirements(text: string): Fact[] {
@@ -167,6 +173,8 @@ export function extractEducationRequirements(text: string): Fact[] {
     pattern.lastIndex = 0;
     let match: RegExpExecArray | null;
     while ((match = pattern.exec(text)) !== null) {
+      const sentence = sentenceAround(sentences, match.index);
+      if (!REQUIREMENT_CONTEXT.test(sentence)) continue;
       const keyword = match[0].toLowerCase();
       if (seen.has(keyword)) continue;
       seen.add(keyword);
@@ -220,6 +228,8 @@ const SKILL_VOCABULARY: string[] = [
   "postgresql",
 ];
 
+const SKILL_CONTEXT = /\b(?:skills?|proficien|experience|knowledge|familiar|expertise|bring your)\b/i;
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -231,15 +241,30 @@ export function extractSkills(text: string): Fact[] {
   for (const skill of SKILL_VOCABULARY) {
     const pattern = new RegExp(
       `(?<![A-Za-z0-9])${escapeRegExp(skill)}(?![A-Za-z0-9])`,
-      "i",
+      "gi",
     );
-    const match = pattern.exec(text);
-    if (match) {
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(text)) !== null) {
+      const sentence = sentenceAround(sentences, match.index);
+      if (!SKILL_CONTEXT.test(sentence)) continue;
       facts.push({
         value: skill,
-        quote: truncate(sentenceAround(sentences, match.index), 320),
+        quote: truncate(sentence, 320),
       });
+      break;
     }
+  }
+  return facts;
+}
+
+/** Graduation batches are extracted only from sentences that explicitly describe eligibility. */
+export function extractGraduationYears(text: string): Fact[] {
+  const facts: Fact[] = [];
+  for (const sentence of splitSentences(text)) {
+    if (!/\b(?:eligible|eligibility|batch(?:es)?|graduat(?:e|ing|ion)|pass.?out)\b/i.test(sentence)) continue;
+    const years = [...sentence.matchAll(/\b20\d{2}\b/g)].map((match) => Number(match[0]));
+    if (!years.length) continue;
+    facts.push({ value: [...new Set(years)].join(", "), quote: truncate(sentence, 320) });
   }
   return facts;
 }
@@ -324,6 +349,7 @@ export function normalizeOpportunity(
   const searchable = body || (search.snippet || "").trim();
   const deadlineFact = searchable ? extractDeadline(searchable) : null;
   const educationFacts = searchable ? extractEducationRequirements(searchable) : [];
+  const graduationFacts = searchable ? extractGraduationYears(searchable) : [];
   const skillFacts = searchable ? extractSkills(searchable) : [];
   const teamFact = searchable ? extractTeamSize(searchable) : null;
   const eligibilityFact = searchable ? extractEligibilityText(searchable) : null;
@@ -340,6 +366,7 @@ export function normalizeOpportunity(
 
   pushEvidence(deadlineFact);
   educationFacts.forEach(pushEvidence);
+  graduationFacts.forEach(pushEvidence);
   skillFacts.forEach(pushEvidence);
   pushEvidence(teamFact);
   pushEvidence(eligibilityFact);
@@ -353,6 +380,7 @@ export function normalizeOpportunity(
     deadline: deadlineFact?.value ?? null,
     eligibilityText: eligibilityFact?.value ?? "",
     educationRequirements: educationFacts.map((f) => f.value),
+    graduationYears: [...new Set(graduationFacts.flatMap((fact) => fact.value.split(", ").map(Number)))],
     skills: skillFacts.map((f) => f.value),
     teamSize: teamFact?.value ?? null,
     sourceEvidence: evidence,

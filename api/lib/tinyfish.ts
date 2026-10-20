@@ -218,6 +218,7 @@ export async function tinyfishFetch(urls: string[]): Promise<TinyFishFetchRespon
 const CATEGORY_TEMPLATES: Record<OpportunityCategory, string> = {
   hackathon: "hackathon for students registration open",
   scholarship: "scholarship for students application open",
+  government_scheme: "government student scheme benefits application official",
   internship: "internship for students application open",
   fellowship: "fellowship for students application open",
 };
