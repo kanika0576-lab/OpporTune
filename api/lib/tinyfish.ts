@@ -1,6 +1,6 @@
 import type { OpportunityCategory, StudentProfile } from "../../src/types";
-import type { TinyFishFetchResult, TinyFishSearchResult } from "./normalize";
-import { isSafeUrl } from "./validation";
+import type { TinyFishFetchResult, TinyFishSearchResult } from "./normalize.js";
+import { isSafeUrl } from "./validation.js";
 
 const SEARCH_ENDPOINT = "https://api.search.tinyfish.ai";
 const FETCH_ENDPOINT = "https://api.fetch.tinyfish.ai";
