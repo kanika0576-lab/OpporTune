@@ -3,12 +3,14 @@ export type View = "home" | "search" | "profile" | "saved";
 export type OpportunityCategory =
   | "hackathon"
   | "scholarship"
+  | "government_scheme"
   | "internship"
   | "fellowship";
 
 export const OPPORTUNITY_CATEGORIES: OpportunityCategory[] = [
   "hackathon",
   "scholarship",
+  "government_scheme",
   "internship",
   "fellowship",
 ];
@@ -33,6 +35,7 @@ export type TeamSize = "solo" | "small" | "large" | "any";
 export interface StudentProfile {
   name: string;
   educationLevel: EducationLevel | "";
+  graduationYear?: string;
   interests: string[];
   skills: string[];
   location: string;
@@ -42,6 +45,7 @@ export interface StudentProfile {
 export const EMPTY_PROFILE: StudentProfile = {
   name: "",
   educationLevel: "",
+  graduationYear: "",
   interests: [],
   skills: [],
   location: "",
@@ -68,6 +72,7 @@ export interface Opportunity {
   deadline: string | null;
   eligibilityText: string;
   educationRequirements: string[];
+  graduationYears?: number[];
   skills: string[];
   /** Human readable team-size requirement, or null when unknown. */
   teamSize: string | null;
