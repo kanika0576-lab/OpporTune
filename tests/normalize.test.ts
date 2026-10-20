@@ -125,6 +125,24 @@ describe("extractEligibilityText", () => {
 });
 
 describe("normalizeOpportunity", () => {
+  it("does not treat individual scholarship applicants as a team-size rule", () => {
+    const normalized = normalizeOpportunity({
+      category: "government_scheme",
+      search: {
+        title: "Student Scholarship Scheme",
+        url: "https://example.gov.in/scholarship",
+        snippet: "Individual students may apply for this scholarship.",
+      },
+      fetch: {
+        url: "https://example.gov.in/scholarship",
+        text: "Individual students may apply for this scholarship.",
+      },
+      retrievedAt: "2026-10-20T00:00:00.000Z",
+    });
+
+    expect(normalized?.teamSize).toBeNull();
+  });
+
   it("builds a fully populated record from retrieved content", () => {
     const opportunity = normalizeOpportunity({
       category: "hackathon",
