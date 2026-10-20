@@ -245,6 +245,44 @@ function checkGraduationYear(
   };
 }
 
+const UNMODELED_REQUIREMENTS: { label: string; pattern: RegExp }[] = [
+  { label: "Citizenship or residency", pattern: /\b(?:citizenship|citizen of|nationality|domicile|resident of|residency)\b/i },
+  { label: "Age", pattern: /\b(?:age limit|aged between|years of age|born (?:on|after|before)|under \d{1,2}|over \d{1,2})\b/i },
+  { label: "Income or financial need", pattern: /\b(?:family income|annual income|income limit|financial need|need[- ]based)\b/i },
+  { label: "Caste or community", pattern: /\b(?:SC|ST|OBC|MBC|DNT|EWS|caste|tribe|community category)\b/i },
+  { label: "Gender", pattern: /\b(?:women only|female applicants|male applicants|gender requirement)\b/i },
+  { label: "Disability status", pattern: /\b(?:person with disabilit\w*|disability certificate|disabled applicants)\b/i },
+  { label: "Current enrollment", pattern: /\b(?:currently enrolled|enrolled at|enrolled in|enrollment required)\b/i },
+  { label: "Institution restriction", pattern: /\b(?:government college|recognized university|accredited institution|approved institution)\b/i },
+];
+
+/** Keep uncovered requirements visible as UNKNOWN instead of silently passing them. */
+function checkUnmodeledRequirements(
+  opportunity: Opportunity,
+): CriterionResult | null {
+  const text = [
+    opportunity.eligibilityText,
+    ...opportunity.educationRequirements,
+    ...opportunity.sourceEvidence.map((item) => item.quote ?? ""),
+  ].join(" ");
+  const found = UNMODELED_REQUIREMENTS.filter(({ pattern }) => pattern.test(text));
+  if (found.length === 0) return null;
+
+  const labels = found.map(({ label }) => label);
+  const evidence = opportunity.sourceEvidence.filter((item) =>
+    found.some(({ pattern }) => pattern.test(item.quote ?? "")),
+  );
+  return {
+    id: "additional-requirements",
+    label: "Additional requirements",
+    status: "UNKNOWN",
+    requirement: labels.join("; "),
+    profileValue: null,
+    explanation: `The source mentions ${labels.join(", ").toLowerCase()} conditions that OpporTune cannot verify from your profile. Confirm them on the official page.`,
+    evidence,
+  };
+}
+
 const LOCATION_RESTRICTION =
   /\b(?:open to|available to|limited to|restricted to|residents? of|citizens? of|based in|located in|only for)\b[^.]{0,60}\b(?:applicants?|students?|candidates?|residents?|citizens?|people|teams?)\b/i;
 const REMOTE_SIGNAL =
@@ -317,6 +355,8 @@ export function checkEligibility(
   if (!teamSize) notChecked.push("Team size");
   const graduationYear = checkGraduationYear(profile, opportunity);
   if (!graduationYear) notChecked.push("Graduation year");
+  const additional = checkUnmodeledRequirements(opportunity);
+  if (!additional) notChecked.push("Additional requirements");
   const location = checkLocation(profile, opportunity);
   if (!location) notChecked.push("Location");
 
@@ -324,6 +364,7 @@ export function checkEligibility(
     education,
     teamSize,
     graduationYear,
+    additional,
     location,
   ].filter((criterion): criterion is CriterionResult => criterion !== null);
 
