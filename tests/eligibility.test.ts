@@ -194,6 +194,19 @@ describe("checkEligibility", () => {
     expect(result.fullyVerified).toBe(false);
   });
 
+  it("keeps specific course and major restrictions unknown", () => {
+    const role = makeOpportunity({
+      eligibilityText: "Applicants should have a degree in economics or marketing.",
+      educationRequirements: ["a degree in economics or marketing"],
+      teamSize: null,
+      sourceEvidence: [{ url: SOURCE_URL, quote: "Applicants should have a degree in economics or marketing." }],
+    });
+
+    const result = checkEligibility(matchingProfile, role);
+    expect(result.criteria.find((criterion) => criterion.id === "additional-requirements")?.status).toBe("UNKNOWN");
+    expect(result.verdict).toBe("needs_review");
+  });
+
   it("treats a remote-only opportunity as location MET", () => {
     const remote = makeOpportunity({
       title: "Online AI Build Challenge 2026",

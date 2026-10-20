@@ -104,6 +104,18 @@ describe("opportunity category quality filters", () => {
     }))).toBe(false);
   });
 
+  it("removes training portals from internship results when they have no internship content", () => {
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "internship",
+      title: "Skill India Digital Hub - Upskilling and career growth",
+      eligibilityText: "Paid AI-powered smart inventory management course using Python.",
+    }))).toBe(false);
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "internship",
+      title: "Software Engineering Internship in India",
+    }))).toBe(true);
+  });
+
   it("removes hackathon idea articles and stale job pages", () => {
     expect(isCurrentCategoryMatch(opportunityFixture({
       category: "hackathon",
