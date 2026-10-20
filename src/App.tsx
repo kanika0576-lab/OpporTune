@@ -181,9 +181,10 @@ export default function App() {
             Your student profile
           </h1>
           <p className="mt-2 text-sm text-navy-500">
-            OpporTune compares every opportunity against this profile. It is
-            stored in this browser with localStorage and is never sent to a
-            server.
+            Your profile is saved in this browser. When you search, education,
+            graduation year, interests, skills, location, and team size are
+            sent to OpporTune&apos;s server to find and rank opportunities. Your
+            name stays in this browser.
           </p>
           <div className="mt-6">
             <ProfileForm
