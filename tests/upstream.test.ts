@@ -129,6 +129,25 @@ describe("opportunity category quality filters", () => {
     }))).toBe(false);
   });
 
+  it("removes hackathons with an explicitly stated past event date", () => {
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "hackathon",
+      title: "Student AI Hackathon",
+      sourceEvidence: [{
+        url: "https://example.org/opportunity",
+        quote: "Scheduled to take place from 1 to 2 January 2000.",
+      }],
+    }))).toBe(false);
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "hackathon",
+      title: "Student AI Hackathon",
+      sourceEvidence: [{
+        url: "https://example.org/opportunity",
+        quote: "Scheduled to take place from 1 to 2 January 2099.",
+      }],
+    }))).toBe(true);
+  });
+
   it("removes blocked cookie and bot-challenge pages from every category", () => {
     expect(isCurrentCategoryMatch(opportunityFixture({
       category: "internship",
