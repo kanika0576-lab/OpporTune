@@ -45,6 +45,12 @@ export function isCurrentCategoryMatch(opportunity: Opportunity): boolean {
     return false;
   }
 
+  // Search can return a host's cookie wall or bot challenge rather than the
+  // opportunity page itself. Those pages do not provide usable evidence.
+  if (/cookies are disabled|enable cookies and refresh|access denied|verify you are human|captcha/.test(sourceText)) {
+    return false;
+  }
+
   if (opportunity.category === "government_scheme") {
     const officialGovernmentHost = /(?:^|\.)(?:gov\.in|nic\.in|gov|gov\.uk)$/.test(host);
     const schemeTopic = /\b(?:scheme|scholarship|financial aid|student benefit|grant)\b/.test(sourceText);
@@ -54,8 +60,7 @@ export function isCurrentCategoryMatch(opportunity: Opportunity): boolean {
   if (opportunity.category === "hackathon") {
     const editorial = /\b(?:project ideas?|ideas for|top \d+|best \d+|complete guide|what is a hackathon|how to organize)\b/.test(sourceText);
     const aboutHackathons = /\bhackathons?\b/.test(sourceText);
-    const blockedPage = /cookies are disabled|enable cookies and refresh|access denied|verify you are human/.test(sourceText);
-    return aboutHackathons && !editorial && !blockedPage;
+    return aboutHackathons && !editorial;
   }
 
   if (opportunity.category === "internship") {
