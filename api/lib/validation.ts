@@ -1,4 +1,3 @@
-import { isIP } from "node:net";
 import {
   EDUCATION_LEVELS,
   OPPORTUNITY_CATEGORIES,
@@ -139,18 +138,32 @@ function isPrivateIPv6(hostname: string): boolean {
   return false;
 }
 
+function isIPv4(host: string): boolean {
+  const parts = host.split(".");
+  if (parts.length !== 4) return false;
+  for (const p of parts) {
+    const n = parseInt(p, 10);
+    if (!Number.isFinite(n) || n < 0 || n > 255 || String(n) !== p) return false;
+  }
+  return true;
+}
+
+function isIPv6(host: string): boolean {
+  return /:/.test(host);
+}
+
 function isPrivateHostname(hostname: string): boolean {
   const host = hostname.toLowerCase();
   if (host === "localhost" || host.endsWith(".localhost")) return true;
   if (host.endsWith(".local") || host.endsWith(".internal")) return true;
   if (host === "metadata.google.internal") return true;
 
-  const ipVersion = isIP(host);
-  if (ipVersion === 4) {
-    return isPrivateIPv4(host.split(".").map((p) => parseInt(p, 10)));
+  const hostWithoutBrackets = host.replace(/^\[|\]$/g, "");
+  if (isIPv4(hostWithoutBrackets)) {
+    return isPrivateIPv4(hostWithoutBrackets.split(".").map((p) => parseInt(p, 10)));
   }
-  if (ipVersion === 6) {
-    return isPrivateIPv6(host.replace(/^\[|\]$/g, ""));
+  if (isIPv6(hostWithoutBrackets)) {
+    return isPrivateIPv6(hostWithoutBrackets);
   }
   return false;
 }
