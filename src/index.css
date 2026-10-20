@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-navy-900 antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-teal-500 ring-offset-2 ring-offset-slate-50;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-teal-500 text-navy-950 shadow-glow hover:bg-teal-400;
+  }
+
+  .btn-secondary {
+    @apply border border-navy-200 bg-white text-navy-800 hover:border-teal-400 hover:text-teal-700;
+  }
+
+  .btn-ghost {
+    @apply text-navy-600 hover:bg-navy-50 hover:text-navy-900;
+  }
+
+  .btn-sm {
+    @apply rounded-lg px-3 py-1.5 text-xs;
+  }
+
+  .card {
+    @apply rounded-2xl border border-navy-100 bg-white shadow-card;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-navy-200 bg-white px-4 py-3 text-sm text-navy-900 placeholder:text-navy-300 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/30;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-bold uppercase tracking-wider text-navy-600;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-teal-300 via-teal-400 to-sky-300 bg-clip-text text-transparent;
+  }
+
+  .navy-panel {
+    background:
+      radial-gradient(60% 120% at 85% 0%, rgba(13, 191, 169, 0.22) 0%, transparent 62%),
+      radial-gradient(50% 110% at 10% 10%, rgba(52, 109, 171, 0.28) 0%, transparent 60%),
+      linear-gradient(160deg, #061426 0%, #0b1f38 55%, #122f52 100%);
+  }
+
+  .navy-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
+
+  .scroll-thin::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .scroll-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-navy-200;
+  }
+}
