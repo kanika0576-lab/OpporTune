@@ -21,13 +21,13 @@ import {
 } from "./lib/normalize.js";
 
 const FETCH_BATCH_SIZE = 10;
-const SOCIAL_OR_VIDEO_HOSTS = ["youtube.com", "youtu.be", "facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com"];
+const SOCIAL_OR_VIDEO_HOSTS = ["youtube.com", "youtu.be", "facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com", "reddit.com"];
 const EVENT_MONTHS: Record<string, number> = {
   january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
   july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
 };
 
-function isUsefulOpportunityUrl(url: string): boolean {
+export function isUsefulOpportunityUrl(url: string): boolean {
   try {
     const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
     return isSafeUrl(url) && !SOCIAL_OR_VIDEO_HOSTS.some((host) => hostname === host || hostname.endsWith(`.${host}`));
@@ -38,14 +38,40 @@ function isUsefulOpportunityUrl(url: string): boolean {
 
 function hasExpiredScheduledEvent(text: string): boolean {
   const eventDate = /\b(?:scheduled to take place|scheduled for|takes place|event dates?|will be held)\b[^.]{0,70}?(\d{1,2})(?:st|nd|rd|th)?\s*(?:to|[-–])\s*(\d{1,2})(?:st|nd|rd|th)?\s*(?:of\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)\s*,?\s*(20\d{2})/i;
-  const match = eventDate.exec(text);
-  if (!match) return false;
-  const month = EVENT_MONTHS[match[3].toLowerCase()];
-  const day = Number(match[2]);
-  const year = Number(match[4]);
+  const scheduledMatch = eventDate.exec(text);
+  if (scheduledMatch) {
+    const month = EVENT_MONTHS[scheduledMatch[3].toLowerCase()];
+    const day = Number(scheduledMatch[2]);
+    const year = Number(scheduledMatch[4]);
+    return isDateInPast(year, month, day);
+  }
+
+  // Some event pages publish a bare range instead of saying “scheduled”.
+  // Require the category word immediately before the range to avoid treating
+  // an unrelated historical date elsewhere on the page as the event date.
+  const monthNames = Object.keys(EVENT_MONTHS).join("|");
+  const bareRange = new RegExp(`\\b(?:hackathon|event)\\b[^.]{0,50}?(${monthNames})\\s+(\\d{1,2})(?:st|nd|rd|th)?[,]?\\s*(20\\d{2})\\s*(?:to|[-–])\\s*(?:(${monthNames})\\s+)?(\\d{1,2})(?:st|nd|rd|th)?[,]?\\s*(20\\d{2})?`, "i");
+  const rangeMatch = bareRange.exec(text);
+  if (!rangeMatch) return false;
+  const startMonth = EVENT_MONTHS[rangeMatch[1].toLowerCase()];
+  const startDay = Number(rangeMatch[2]);
+  const startYear = Number(rangeMatch[3]);
+  if (!isValidDate(startYear, startMonth, startDay)) return false;
+  const endMonth = rangeMatch[4] ? EVENT_MONTHS[rangeMatch[4].toLowerCase()] : startMonth;
+  const endDay = Number(rangeMatch[5]);
+  const endYear = rangeMatch[6] ? Number(rangeMatch[6]) : startYear + (endMonth < startMonth ? 1 : 0);
+  return isDateInPast(endYear, endMonth, endDay);
+}
+
+function isDateInPast(year: number, month: number, day: number): boolean {
+  if (!isValidDate(year, month, day)) return false;
   const endDate = new Date(Date.UTC(year, month, day));
-  if (endDate.getUTCMonth() !== month || endDate.getUTCDate() !== day) return false;
   return endDate < new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+}
+
+function isValidDate(year: number, month: number, day: number): boolean {
+  const date = new Date(Date.UTC(year, month, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month && date.getUTCDate() === day;
 }
 
 export function isCurrentCategoryMatch(opportunity: Opportunity): boolean {
