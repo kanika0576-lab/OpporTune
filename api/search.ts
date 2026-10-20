@@ -5,6 +5,7 @@ import type {
   SearchResponse,
 } from "../src/types";
 import { isSafeUrl } from "./lib/validation.js";
+import { checkEligibility } from "../src/lib/eligibility.js";
 import { validateSearchRequest } from "./lib/validation.js";
 import {
   buildSearchQuery,
@@ -20,6 +21,16 @@ import {
 } from "./lib/normalize.js";
 
 const FETCH_BATCH_SIZE = 10;
+const SOCIAL_OR_VIDEO_HOSTS = ["youtube.com", "youtu.be", "facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com"];
+
+function isUsefulOpportunityUrl(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    return isSafeUrl(url) && !SOCIAL_OR_VIDEO_HOSTS.some((host) => hostname === host || hostname.endsWith(`.${host}`));
+  } catch {
+    return false;
+  }
+}
 
 function sendError(
   res: VercelResponse,
@@ -131,7 +142,7 @@ export default async function handler(
     const candidates = search.results
       .filter(
         (result): result is TinyFishSearchResult & { url: string } =>
-          typeof result.url === "string" && isSafeUrl(result.url),
+          typeof result.url === "string" && isUsefulOpportunityUrl(result.url),
       )
       .slice(0, limit);
 
@@ -154,7 +165,10 @@ export default async function handler(
           retrievedAt,
         }),
       )
-      .filter((opportunity): opportunity is Opportunity => opportunity !== null);
+      .filter((opportunity): opportunity is Opportunity => opportunity !== null)
+      .filter((opportunity) => !opportunity.deadline || opportunity.deadline >= new Date().toISOString().slice(0, 10))
+      .sort((a, b) => checkEligibility(profile, b).relevanceScore - checkEligibility(profile, a).relevanceScore)
+      .slice(0, limit);
 
     const response: SearchResponse = {
       ok: true,
