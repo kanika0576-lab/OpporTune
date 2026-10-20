@@ -5,7 +5,7 @@ import {
   type OpportunityCategory,
   type StudentProfile,
   type TeamSize,
-} from "../../src/types";
+} from "../../src/types.js";
 
 export const MAX_QUERY_LENGTH = 2000;
 export const MIN_QUERY_LENGTH = 2;
