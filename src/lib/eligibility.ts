@@ -6,7 +6,7 @@ import type {
   Opportunity,
   StudentProfile,
 } from "../types";
-import { parseTeamSize } from "./teamSize";
+import { parseTeamSize } from "./teamSize.js";
 
 interface EducationKeywordRule {
   pattern: RegExp;
@@ -166,49 +166,6 @@ function checkEducation(
   };
 }
 
-function checkSkills(
-  profile: StudentProfile,
-  opportunity: Opportunity,
-): CriterionResult | null {
-  const required = opportunity.skills.filter((s) => s && s.trim().length > 0);
-  if (required.length === 0) return null;
-
-  if (profile.skills.length === 0) {
-    return {
-      id: "skills",
-      label: "Skills",
-      status: "UNKNOWN",
-      requirement: required.join(", "),
-      profileValue: null,
-      explanation:
-        "You have not added skills to your profile, so the overlap could not be checked.",
-      evidence: evidenceFor(opportunity, (q) =>
-        required.some((s) => quoteMentions(q, s)),
-      ),
-    };
-  }
-
-  const requiredSet = new Set(required.map(normalize));
-  const matched = profile.skills.filter((s) => requiredSet.has(normalize(s)));
-
-  return {
-    id: "skills",
-    label: "Skills",
-    status: matched.length > 0 ? "MET" : "NOT_MET",
-    requirement: required.join(", "),
-    profileValue: profile.skills.join(", "),
-    explanation:
-      matched.length > 0
-        ? `Matched ${matched.join(", ")} against the stated requirements.`
-        : `None of your skills appear in the requirements listed by the source (${required.join(
-            ", ",
-          )}).`,
-    evidence: evidenceFor(opportunity, (q) =>
-      matched.some((s) => quoteMentions(q, s)),
-    ),
-  };
-}
-
 function checkTeamSize(
   profile: StudentProfile,
   opportunity: Opportunity,
@@ -253,6 +210,38 @@ function checkTeamSize(
       ? `Your team size (${profile.teamSize}) matches the stated requirement.`
       : `The source asks for a ${parsed} team, but your profile says ${profile.teamSize}.`,
     evidence: evidenceFor(opportunity, (q) => quoteMentions(q, requirement)),
+  };
+}
+
+function checkGraduationYear(
+  profile: StudentProfile,
+  opportunity: Opportunity,
+): CriterionResult | null {
+  const years = opportunity.graduationYears ?? [];
+  if (!years.length) return null;
+  const year = Number(profile.graduationYear);
+  if (!Number.isInteger(year) || year < 2000 || year > 2099) {
+    return {
+      id: "graduation-year",
+      label: "Graduation year",
+      status: "UNKNOWN",
+      requirement: years.join(", "),
+      profileValue: profile.graduationYear || null,
+      explanation: "The source limits eligible graduation years. Add your expected graduation year to check this requirement.",
+      evidence: evidenceFor(opportunity, (q) => years.some((y) => q?.includes(String(y)))),
+    };
+  }
+  const matched = years.includes(year);
+  return {
+    id: "graduation-year",
+    label: "Graduation year",
+    status: matched ? "MET" : "NOT_MET",
+    requirement: years.join(", "),
+    profileValue: String(year),
+    explanation: matched
+      ? `Your expected graduation year (${year}) is listed by the source.`
+      : `The source lists ${years.join(", ")}; your expected graduation year is ${year}.`,
+    evidence: evidenceFor(opportunity, (q) => years.some((y) => q?.includes(String(y)))),
   };
 }
 
@@ -322,17 +311,19 @@ export function checkEligibility(
 
   const education = checkEducation(profile, opportunity);
   if (!education) notChecked.push("Education level");
-  const skills = checkSkills(profile, opportunity);
-  if (!skills) notChecked.push("Skills");
+  // Skills are a relevance signal, not a universal eligibility requirement.
+  // A broad skill mention on a page must never disqualify a student.
   const teamSize = checkTeamSize(profile, opportunity);
   if (!teamSize) notChecked.push("Team size");
+  const graduationYear = checkGraduationYear(profile, opportunity);
+  if (!graduationYear) notChecked.push("Graduation year");
   const location = checkLocation(profile, opportunity);
   if (!location) notChecked.push("Location");
 
   const criteria: CriterionResult[] = [
     education,
-    skills,
     teamSize,
+    graduationYear,
     location,
   ].filter((criterion): criterion is CriterionResult => criterion !== null);
 
@@ -364,23 +355,41 @@ export function computeRelevanceScore(
   profile: StudentProfile,
   opportunity: Opportunity,
 ): number {
+  const aliases: Record<string, string[]> = {
+    "artificial intelligence": ["ai"],
+    ai: ["artificial intelligence"],
+    "machine learning": ["ml"],
+    ml: ["machine learning"],
+    "web development": ["web dev", "frontend", "back end", "backend"],
+  };
+  const equivalent = (left: string, right: string) =>
+    left === right || (aliases[left] ?? []).includes(right) || (aliases[right] ?? []).includes(left);
   const skillText = opportunity.skills.map(normalize);
-  const profileSkills = new Set(profile.skills.map(normalize));
+  const profileSkills = profile.skills.map(normalize);
 
   const skillScore =
     skillText.length === 0
       ? 0
-      : (skillText.filter((s) => profileSkills.has(s)).length / skillText.length) *
+      : (skillText.filter((s) => profileSkills.some((p) => equivalent(s, p))).length / skillText.length) *
         100;
 
   const haystack = `${opportunity.title} ${opportunity.eligibilityText} ${opportunity.educationRequirements.join(
     " ",
   )} ${opportunity.skills.join(" ")}`.toLowerCase();
   const interests = profile.interests.map(normalize).filter(Boolean);
+  const interestMatches = (interest: string) => {
+    const variants = [interest, ...(aliases[interest] ?? [])];
+    return variants.some((variant) => {
+      if (variant.length <= 2) {
+        return variant === "ai" ? /\bai\b/i.test(haystack) : haystack.includes(variant);
+      }
+      return haystack.includes(variant);
+    });
+  };
   const interestScore =
     interests.length === 0
       ? 0
-      : (interests.filter((i) => haystack.includes(i)).length / interests.length) *
+      : (interests.filter(interestMatches).length / interests.length) *
         100;
 
   if (skillText.length === 0 && interests.length === 0) return 0;
@@ -398,7 +407,7 @@ export function computeRelevanceScore(
 export function verdictLabel(verdict: EligibilityVerdict): string {
   switch (verdict) {
     case "eligible":
-      return "Likely eligible";
+      return "Stated checks met";
     case "needs_review":
       return "Needs review";
     case "not_eligible":
