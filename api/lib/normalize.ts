@@ -351,7 +351,11 @@ export function normalizeOpportunity(
   const educationFacts = searchable ? extractEducationRequirements(searchable) : [];
   const graduationFacts = searchable ? extractGraduationYears(searchable) : [];
   const skillFacts = searchable ? extractSkills(searchable) : [];
-  const teamFact = searchable ? extractTeamSize(searchable) : null;
+  // Team composition is relevant to hackathons; ordinary references to
+  // individuals on scholarship or job pages are not team-size requirements.
+  const teamFact = searchable && category === "hackathon"
+    ? extractTeamSize(searchable)
+    : null;
   const eligibilityFact = searchable ? extractEligibilityText(searchable) : null;
 
   const evidence: SourceEvidence[] = [];
