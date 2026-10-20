@@ -58,6 +58,18 @@ export function isCurrentCategoryMatch(opportunity: Opportunity): boolean {
     return aboutHackathons && !editorial && !blockedPage;
   }
 
+  if (opportunity.category === "internship") {
+    return /\bintern(?:ship)?s?\b/i.test(`${opportunity.title} ${opportunity.eligibilityText}`);
+  }
+
+  if (opportunity.category === "scholarship") {
+    return /\b(?:scholarships?|grants?)\b/i.test(`${opportunity.title} ${opportunity.eligibilityText}`);
+  }
+
+  if (opportunity.category === "fellowship") {
+    return /\bfellowships?\b/i.test(`${opportunity.title} ${opportunity.eligibilityText}`);
+  }
+
   return true;
 }
 
