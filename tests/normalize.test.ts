@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractDeadline,
   extractEducationRequirements,
+  extractGraduationYears,
   extractEligibilityText,
   extractSkills,
   extractTeamSize,
@@ -72,6 +73,19 @@ describe("extractSkills", () => {
   it("returns an empty list when no known skill is named", () => {
     expect(extractSkills("Bring your ideas and a notebook.")).toEqual([]);
   });
+
+  it("does not treat unrelated page navigation as a skill requirement", () => {
+    expect(extractSkills("HTML | CSS | Home | About | Python tutorials")).toEqual([]);
+  });
+});
+
+describe("extractGraduationYears", () => {
+  it("extracts batch years stated as eligibility", () => {
+    expect(extractGraduationYears("Eligible batches: 2026, 2027 and 2028 graduates.")[0]?.value).toBe("2026, 2027, 2028");
+  });
+  it("ignores years that are not tied to eligibility or batch requirements", () => {
+    expect(extractGraduationYears("The event takes place in 2027.")).toEqual([]);
+  });
 });
 
 describe("extractTeamSize", () => {
@@ -138,6 +152,7 @@ describe("normalizeOpportunity", () => {
     expect(opportunity?.teamSize).toBe("Teams of 2-4");
     expect(opportunity?.skills).toContain("python");
     expect(opportunity?.educationRequirements.length).toBeGreaterThan(0);
+    expect(opportunity?.graduationYears).toEqual([]);
     expect(opportunity?.sourceEvidence.length).toBeGreaterThan(0);
     expect(opportunity?.retrievedAt).toBe(RETRIEVED_AT);
     expect(opportunity?.id).toMatch(/^opp-/);
@@ -179,6 +194,20 @@ describe("normalizeOpportunity", () => {
 
     expect(opportunity?.deadline).toBe("2026-05-01");
     expect(opportunity?.officialUrl).toBe("https://example.org/internship");
+  });
+
+  it("includes only explicitly stated eligible graduation years", () => {
+    const opportunity = normalizeOpportunity({
+      category: "internship",
+      retrievedAt: RETRIEVED_AT,
+      search: { title: "Student internship", url: "https://example.org/intern" },
+      fetch: {
+        url: "https://example.org/intern",
+        title: "Student internship",
+        text: "Eligible batches: 2026, 2027 and 2028 graduates. Apply by 2026-12-01.",
+      },
+    });
+    expect(opportunity?.graduationYears).toEqual([2026, 2027, 2028]);
   });
 
   it("returns null when there is no usable title or url", () => {

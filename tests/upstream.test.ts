@@ -221,6 +221,45 @@ describe("/api/search — upstream failures", () => {
 });
 
 describe("/api/search — success path", () => {
+  it("filters explicitly expired listings and social-video results", async () => {
+    mockFetch((url) => {
+      if (url.startsWith(SEARCH_URL)) {
+        return {
+          status: 200,
+          body: {
+            query: "student hackathons",
+            results: [
+              { title: "Expired challenge", url: "https://example.org/expired" },
+              { title: "Video result", url: "https://youtube.com/watch?v=1" },
+              { title: "Open challenge", url: "https://example.org/open" },
+            ],
+          },
+        };
+      }
+      return {
+        status: 200,
+        body: {
+          results: [
+            {
+              url: "https://example.org/expired",
+              title: "Expired challenge",
+              text: "Deadline: 2020-01-01.",
+            },
+            {
+              url: "https://example.org/open",
+              title: "Open challenge",
+              text: "Open to undergraduate students. Applications are open now.",
+            },
+          ],
+        },
+      };
+    });
+    const { res, captured } = createRes();
+    await searchHandler({ method: "POST", body: validBody } as any, res);
+    expect(captured.statusCode).toBe(200);
+    expect(captured.body.opportunities.map((item: any) => item.title)).toEqual(["Open challenge"]);
+  });
+
   it("returns normalized, source-backed opportunities", async () => {
     const fetchMock = mockFetch((url) => {
       if (url.startsWith(SEARCH_URL)) {
@@ -255,7 +294,7 @@ describe("/api/search — success path", () => {
               format: "markdown",
               author: null,
               published_date: null,
-              text: "Open to undergraduate students. Applications close on 2026-03-15. Teams of 2-4 members. Bring Python skills.",
+              text: "Open to undergraduate students. Applications close on 2027-03-15. Teams of 2-4 members. Bring Python skills.",
             },
           ],
           errors: [],
@@ -273,7 +312,7 @@ describe("/api/search — success path", () => {
 
     const opportunity = captured.body.opportunities[0];
     expect(opportunity.title).toBe("Global AI Build Challenge");
-    expect(opportunity.deadline).toBe("2026-03-15");
+    expect(opportunity.deadline).toBe("2027-03-15");
     expect(opportunity.teamSize).toBe("Teams of 2-4");
     expect(opportunity.skills).toContain("python");
     expect(opportunity.sourceEvidence.length).toBeGreaterThan(0);

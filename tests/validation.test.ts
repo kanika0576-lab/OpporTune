@@ -28,6 +28,11 @@ function body(overrides: Record<string, unknown> = {}) {
 }
 
 describe("validateSearchRequest", () => {
+  it("accepts government schemes as a search category", () => {
+    const result = validateSearchRequest(body({ category: "government_scheme" }));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.category).toBe("government_scheme");
+  });
   it("accepts a valid request", () => {
     const result = validateSearchRequest(body());
     expect(result.ok).toBe(true);

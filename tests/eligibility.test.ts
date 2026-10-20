@@ -16,7 +16,7 @@ function makeOpportunity(overrides: Partial<Opportunity> = {}): Opportunity {
     organizer: "example.org",
     category: "hackathon",
     officialUrl: SOURCE_URL,
-    deadline: "2026-03-15",
+    deadline: "2027-03-15",
     eligibilityText: "Participants must be enrolled at a university.",
     educationRequirements: ["undergraduate students enrolled at a university"],
     skills: ["python", "react"],
@@ -119,7 +119,7 @@ describe("checkEligibility", () => {
     expect(result.fullyVerified).toBe(false);
   });
 
-  it("marks skills NOT_MET when nothing overlaps", () => {
+  it("does not treat missing skill overlap as an eligibility failure", () => {
     const profile: StudentProfile = {
       ...matchingProfile,
       skills: ["cooking"],
@@ -127,19 +127,18 @@ describe("checkEligibility", () => {
 
     const result = checkEligibility(profile, makeOpportunity());
 
-    const skills = result.criteria.find((c) => c.id === "skills");
-    expect(skills?.status).toBe("NOT_MET");
-    expect(result.verdict).toBe("not_eligible");
+    expect(result.criteria.find((c) => c.id === "skills")).toBeUndefined();
+    expect(result.verdict).toBe("eligible");
   });
 
-  it("marks skills UNKNOWN when the student has not listed any", () => {
+  it("keeps skills as a relevance signal when the student has not listed any", () => {
     const profile: StudentProfile = { ...matchingProfile, skills: [] };
 
     const result = checkEligibility(profile, makeOpportunity());
 
     const skills = result.criteria.find((c) => c.id === "skills");
-    expect(skills?.status).toBe("UNKNOWN");
-    expect(result.fullyVerified).toBe(false);
+    expect(skills).toBeUndefined();
+    expect(result.fullyVerified).toBe(true);
   });
 
   it("marks team size NOT_MET when it does not match", () => {
@@ -149,6 +148,14 @@ describe("checkEligibility", () => {
 
     const team = result.criteria.find((c) => c.id === "teamSize");
     expect(team?.status).toBe("NOT_MET");
+  });
+
+  it("checks a graduation batch when the opportunity states eligible years", () => {
+    const opportunity = makeOpportunity({ graduationYears: [2026, 2027] });
+    const matched = checkEligibility({ ...matchingProfile, graduationYear: "2027" }, opportunity);
+    const unmatched = checkEligibility({ ...matchingProfile, graduationYear: "2029" }, opportunity);
+    expect(matched.criteria.find((c) => c.id === "graduation-year")?.status).toBe("MET");
+    expect(unmatched.criteria.find((c) => c.id === "graduation-year")?.status).toBe("NOT_MET");
   });
 
   it("omits criteria the source never mentioned and reports them as not checked", () => {
@@ -163,7 +170,6 @@ describe("checkEligibility", () => {
 
     expect(result.criteria).toHaveLength(0);
     expect(result.notChecked).toContain("Education level");
-    expect(result.notChecked).toContain("Skills");
     expect(result.notChecked).toContain("Team size");
     expect(result.verdict).toBe("needs_review");
     expect(result.fullyVerified).toBe(false);
@@ -231,6 +237,14 @@ describe("relevance score", () => {
     );
     expect(high).toBeGreaterThan(low);
     expect(high).toBeLessThanOrEqual(100);
+  });
+
+  it("matches common AI wording equivalents", () => {
+    const score = computeRelevanceScore(
+      { ...matchingProfile, interests: ["artificial intelligence"], skills: [] },
+      makeOpportunity({ title: "AI student challenge", skills: [] }),
+    );
+    expect(score).toBe(100);
   });
 
   it("is independent of eligibility — a perfect overlap with an unmet rule still scores", () => {
