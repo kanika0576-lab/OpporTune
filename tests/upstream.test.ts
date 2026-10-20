@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import healthHandler from "../api/health";
-import searchHandler, { isCurrentCategoryMatch } from "../api/search";
+import searchHandler, { isCurrentCategoryMatch, isUsefulOpportunityUrl } from "../api/search";
 import type { Opportunity } from "../src/types";
 
 const TEST_KEY = "tf_test_secret_key_123";
@@ -146,6 +146,19 @@ describe("opportunity category quality filters", () => {
         quote: "Scheduled to take place from 1 to 2 January 2099.",
       }],
     }))).toBe(true);
+    expect(isCurrentCategoryMatch(opportunityFixture({
+      category: "hackathon",
+      title: "India Agentic AI Open Hackathon",
+      sourceEvidence: [{
+        url: "https://example.org/opportunity",
+        quote: "Hackathon June 26, 2000 - July 25.",
+      }],
+    }))).toBe(false);
+  });
+
+  it("ignores social discussion pages when searching for opportunities", () => {
+    expect(isUsefulOpportunityUrl("https://www.reddit.com/r/students/example")).toBe(false);
+    expect(isUsefulOpportunityUrl("https://hackindia.org/events")).toBe(true);
   });
 
   it("removes blocked cookie and bot-challenge pages from every category", () => {
