@@ -50,7 +50,8 @@ function sanitizeProfile(input: unknown): StudentProfile {
     ? (raw.teamSize as TeamSize)
     : "any";
   return {
-    name: asString(raw.name, 80) ?? "",
+    // A name is not needed for matching and must stay in the user's browser.
+    name: "",
     educationLevel,
     graduationYear: /^20\d{2}$/.test(String(raw.graduationYear ?? ""))
       ? String(raw.graduationYear)
