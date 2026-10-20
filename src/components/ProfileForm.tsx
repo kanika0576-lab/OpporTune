@@ -317,7 +317,7 @@ export default function ProfileForm({
             </span>
           ) : (
             <span className="text-sm text-navy-500">
-              Your profile is stored in this browser only.
+              Profile details are saved here. Matching details are sent when you search; your name is not.
             </span>
           )}
         </div>
